@@ -274,12 +274,7 @@
                 </div>
             </form>
             
-            <div class="mt-6 text-center slide-in" style="animation-delay: 0.4s;">
-                <button onclick="toggleTheme()" class="btn-secondary p-3 rounded-xl bg-gray-200/60 dark:bg-gray-800/60 text-gray-900 dark:text-white hover:bg-gray-300/80 dark:hover:bg-gray-700/80 flex items-center space-x-2 mx-auto">
-                    <span id="themeIcon">🌙</span> 
-                    <span class="text-sm font-medium">Toggle Theme</span>
-                </button>
-            </div>
+
         </div>
     </div>
 
@@ -359,17 +354,14 @@
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="hidden sm:block">
-                        <span id="userInfo" class="text-sm font-medium text-gray-900 dark:text-white bg-gray-200/40 dark:bg-gray-800/40 px-3 py-2 rounded-lg"></span>
+                        <span id="userInfo" class="text-sm font-medium text-gray-900 bg-gray-200/40 px-3 py-2 rounded-lg"></span>
                     </div>
-                    <button onclick="toggleTheme()" class="btn-secondary p-2 rounded-lg bg-gray-200/60 dark:bg-gray-700/60 text-gray-900 dark:text-white hover:bg-gray-300/80 dark:hover:bg-gray-600/80">
-                        <span id="themeIconNav">🌙</span>
-                    </button>
-                    <button onclick="logout()" class="btn-secondary px-4 py-2 bg-red-100/30 dark:bg-red-900/30 hover:bg-red-200/50 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 rounded-lg font-medium flex items-center space-x-2">
+                    <button onclick="logout()" class="btn-secondary px-4 py-2 bg-red-100/30 hover:bg-red-200/50 text-red-600 rounded-lg font-medium flex items-center space-x-2">
                         <span>🚪</span>
                         <span class="hidden sm:inline">Keluar</span>
                     </button>
                     <div class="md:hidden">
-                        <button onclick="toggleMobileMenu()" class="btn-secondary p-2 rounded-lg text-gray-900 dark:text-white">
+                        <button onclick="toggleMobileMenu()" class="btn-secondary p-2 rounded-lg text-gray-900">
                             <span id="menuIcon">☰</span>
                         </button>
                     </div>
@@ -392,10 +384,15 @@
             <!-- Add Task Form -->
             <div class="lg:col-span-1">
                 <div class="interactive-card glass rounded-2xl shadow-xl p-6 fade-in">
-                    <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-                        <span class="mr-3 text-2xl">➕</span>
-                        Tambah Tugas Baru
-                    </h2>
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                            <span class="mr-3 text-2xl">➕</span>
+                            Tambah Tugas Baru
+                        </h2>
+                        <button onclick="toggleTheme()" class="btn-secondary p-3 rounded-xl bg-gray-200/60 dark:bg-gray-700/60 hover:bg-gray-300/80 dark:hover:bg-gray-600/80 text-gray-900 dark:text-white transition-all duration-300">
+                            <span id="themeIcon">🌙</span>
+                        </button>
+                    </div>
                     <form id="taskForm" onsubmit="addTask(event)" class="space-y-5">
                         <div class="slide-in">
                             <label class="block text-sm font-semibold text-gray-900 dark:text-white mb-2">Nama Tugas</label>
@@ -711,9 +708,9 @@
         let tasks = [];
         let currentUser = '';
         let userRole = '';
-        let isDarkMode = false;
         let taskIdCounter = 1;
         let isLoggedIn = false;
+        let isDarkMode = false;
 
         // User accounts - hanya admin
         const users = {
@@ -722,9 +719,12 @@
 
         // Initialize app
         document.addEventListener('DOMContentLoaded', function() {
-            // Load saved theme
-            if (localStorage.getItem('darkMode') === 'true') {
-                toggleTheme();
+            // Initialize dark mode
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                isDarkMode = true;
+                document.documentElement.classList.add('dark');
+                updateThemeIcon();
             }
             
             // Check if user is already logged in
@@ -861,37 +861,7 @@
             }
         }
 
-        // Enhanced theme management with smooth transitions
-        function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            
-            // Add transition class to body
-            document.body.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-            
-            document.documentElement.classList.toggle('dark', isDarkMode);
-            
-            // Update both theme icons with animation
-            const themeIcon = document.getElementById('themeIcon');
-            const themeIconNav = document.getElementById('themeIconNav');
-            
-            // Animate icon change
-            [themeIcon, themeIconNav].forEach(icon => {
-                if (icon) {
-                    icon.style.transform = 'scale(0)';
-                    setTimeout(() => {
-                        icon.textContent = isDarkMode ? '☀️' : '🌙';
-                        icon.style.transform = 'scale(1)';
-                    }, 150);
-                }
-            });
-            
-            localStorage.setItem('darkMode', isDarkMode);
-            
-            // Remove transition after animation
-            setTimeout(() => {
-                document.body.style.transition = '';
-            }, 400);
-        }
+
 
         // Enhanced mobile menu with animation
         function toggleMobileMenu() {
@@ -1656,6 +1626,29 @@
             }, 1000);
         }
 
+        // Theme toggle functions
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            }
+            
+            updateThemeIcon();
+            showNotification(isDarkMode ? 'Mode gelap diaktifkan! 🌙' : 'Mode terang diaktifkan! ☀️', 'success');
+        }
+
+        function updateThemeIcon() {
+            const themeIcon = document.getElementById('themeIcon');
+            if (themeIcon) {
+                themeIcon.textContent = isDarkMode ? '☀️' : '🌙';
+            }
+        }
+
         // Add keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             // ESC to close modals
@@ -1665,8 +1658,8 @@
                 closeRegisterModal();
             }
             
-            // Ctrl/Cmd + K for theme toggle
-            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            // Ctrl+K for theme toggle (only when logged in and on dashboard)
+            if (e.ctrlKey && e.key === 'k' && isLoggedIn && !document.getElementById('dashboardPage').classList.contains('hidden')) {
                 e.preventDefault();
                 toggleTheme();
             }
@@ -1699,5 +1692,5 @@
         });
 
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a27c3943bf6034',t:'MTc1OTcyNTY3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98a2cab87035f8d6',t:'MTc1OTcyODg5MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
