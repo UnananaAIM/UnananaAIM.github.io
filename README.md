@@ -1,1 +1,1 @@
-<head><meta http-equiv="refresh" content="5;url=todo.html"></head>
+<head><meta http-equiv="refresh" content="5;url='todo.html'"></head>
